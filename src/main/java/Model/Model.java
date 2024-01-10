@@ -9,6 +9,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.input.SAXBuilder;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,15 +18,17 @@ import java.io.OutputStream;
 import java.util.List;
 
 public class Model {
-
     private Document doc;
+    private Document doc_reader;
+    SAXBuilder sax;
     private Activo current;
-
     private List_Activos lista;
     private static final String FILENAME = "c:\\Users\\Familia Leiva Salas\\IdeaProjects\\Examen_Practica\\src\\data.xml";
     public Model() throws IOException, JDOMException {
         this.lista = new List_Activos();
         this.init_xml_file();
+        this.cargar_datos();
+        //doc.setRootElement(new Element("Activos"));
     }
 
     public boolean activo_existente(String serie){
@@ -33,32 +37,36 @@ public class Model {
     }
 
     public void save(Activo obj) throws IOException, JDOMException {
-        //current = seleccionar_activo_codigo(obj.getCodigo());
+        current = seleccionar_activo_codigo(obj.getCodigo());
         System.out.println("Ingreso save model");
         if (!this.activo_existente(obj.getCodigo())) {
             lista.agregar(obj);
-            System.out.printf(obj.toString());
-            this.write_activo(obj, System.out);
-
+            //System.out.printf(obj.toString());
         }
-        else actualizar_activo(obj, System.out);
+        else actualizar_activo(obj);
+
     }
 
     public void init_xml_file() throws IOException, JDOMException {
-            SAXBuilder sax = new SAXBuilder();
+            this.sax = new SAXBuilder();
             try {
+                sax.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                sax.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
                 doc = sax.build(new File(FILENAME));
-            } catch (JDOMException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (JDOMException | IOException e) {
                 throw new RuntimeException(e);
             }
-            doc.setRootElement(new Element("Activos"));
+        // doc.setRootElement(new Element("Activos"));
         }
-
-
         public Activo seleccionar_activo_codigo(String serie){
             return lista.obtener(serie);
+        }
+
+        public void actualizar_activo(Activo obj){
+            current.setActivo(obj.getActivo());
+            current.setCategoria(obj.getActivo());
+            current.setFabricacion(obj.getFabricacion());
+            current.setValor(obj.getValor());
         }
 
     public void write_activo(Activo obj, OutputStream output) throws JDOMException, IOException{
@@ -102,12 +110,13 @@ public class Model {
 
     }
 
-    public void actualizar_activo(Activo obj, OutputStream output) throws IOException {
+    public void actualizar_activo_xml(Activo obj, OutputStream output) throws IOException {
         Element rootNode = doc.getRootElement();
 
         List<Element> lista_activos = rootNode.getChildren("Activo");
 
         for (Element element : lista_activos){
+            System.out.println(lista_activos.size());
             String id = element.getChild("Codigo").getText();
             System.out.println("Este es el id en analisis "+ id);
             if(id.equals(obj.getCodigo())){
@@ -128,5 +137,50 @@ public class Model {
                     new FileWriter(FILENAME)){
             xmlOutputter.output(doc, fileWriter);
         }
+    }
+    public void cargar_datos() throws IOException, JDOMException {
+        System.out.println("Ingreso al sector carga de datos");
+        try {
+
+            Element rootNode = doc.getRootElement();
+            List<Element> lista_activos = rootNode.getChildren();
+
+            System.out.println(rootNode.getName() + " padre\n");
+
+            System.out.println(lista_activos.size());
+
+            for (Element element : lista_activos) {
+                System.out.println(element.getChild("Codigo").getText());
+                String codigo = element.getChild("Codigo").getText();
+                String nombre = element.getChild("Nombre").getText();
+                int fabric = Integer.valueOf(element.getChild("Fabricacion").getText());
+                double valor = Double.valueOf(element.getChild("Valor").getText());
+                String categ = element.getChild("Categoria").getText();
+                System.out.println("Objeto Recuperado" + codigo + nombre + fabric + valor + categ);
+
+
+                this.save(new Activo(codigo, nombre, categ, fabric, valor));
+            }
+            this.limpiar_xml();
+
+        }catch (IOException | JDOMException e) {
+            System.out.println("Excepcion lanzada");
+            throw new RuntimeException(e);
+        }
+
+    }
+    public void limpiar_xml(){
+        Element rootNode = doc.getRootElement();
+        rootNode.removeChildren("Activo");
+    }
+
+    public void guardar_datos() throws IOException, JDOMException {
+        System.out.println("Ingreso a guardado de datos");
+
+        for (int i = 0; i < lista.getList().size(); i++){
+            System.out.printf("Guardando obj: " + lista.getList().get(i).toString());
+            this.write_activo(lista.getList().get(i), System.out);
+        }
+
     }
 }

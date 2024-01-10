@@ -9,24 +9,25 @@ import org.jdom2.JDOMException;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Controller implements ActionListener {
-
-
     View vista;
     Model modelo;
 
+    Window_Listener w_listenr;
+
     public Controller() throws IOException, JDOMException {
         this.vista = new View(this);
+        w_listenr = new Window_Listener();
+        this.vista.addWindowListener(w_listenr);
         try {
             this.modelo = new Model();
+            System.out.println("Constructor modelo");
+
         } catch (IOException | JDOMException e) {
             throw new RuntimeException(e);
         }
@@ -58,16 +59,15 @@ public class Controller implements ActionListener {
     }
 
     public void guardar_instrumento() throws IOException, JDOMException {
-        //btn_borrar.setEnabled(false);
+        vista.getTxf_codigo().setEnabled(true);
         if(validar_excepciones(vista.getTxf_codigo().getText())) {
             Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), String.valueOf(vista.getCmb_categoria().getSelectedItem()),
                     Integer.parseInt(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
             modelo.save(activo);
             vista.limpiar_pnl_ingreso_txFields();
-             } else vista.limpiar_pnl_ingreso_txFields();
         }
 
-
+    }
 
     public void recuperar_activo(){
 
@@ -118,7 +118,6 @@ public class Controller implements ActionListener {
 
     }
 
-    //classes
 
     public void actionPerformed(ActionEvent e) {
             switch (e.getActionCommand()) {
@@ -143,7 +142,33 @@ public class Controller implements ActionListener {
         }
 
 
+    public class Window_Listener implements WindowListener {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            try {
+                modelo.guardar_datos();
+            } catch (IOException | JDOMException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        @Override
+        public void windowOpened(WindowEvent e) {}
 
+        @Override
+        public void windowClosed(WindowEvent e) {}
+
+        @Override
+        public void windowIconified(WindowEvent e) {}
+
+        @Override
+        public void windowDeiconified(WindowEvent e) {}
+
+        @Override
+        public void windowActivated(WindowEvent e) {}
+
+        @Override
+        public void windowDeactivated(WindowEvent e) {}
+    }
 
 
 }

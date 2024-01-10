@@ -62,7 +62,7 @@ public class View extends JFrame {
     }
 
     public void limpiar_pnl_ingreso_txFields() {
-        //txF_Serie.setEnabled(true);
+        txf_codigo.setEnabled(true);
         this.txf_codigo.setText("");
         this.txf_activo.setText("");
         this.txf_fabricacion.setText("");
