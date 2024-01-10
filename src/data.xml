@@ -2,16 +2,9 @@
 <Activos>
   <Activo>
     <Codigo>1111</Codigo>
-    <Nombre>1</Nombre>
-    <Fabricacion>1</Fabricacion>
-    <Valor>1.0</Valor>
-    <Categoria>1</Categoria>
-  </Activo>
-  <Activo>
-    <Codigo>2222</Codigo>
-    <Nombre>Mochi</Nombre>
-    <Fabricacion>2</Fabricacion>
-    <Valor>2.0</Valor>
-    <Categoria>2</Categoria>
+    <Nombre>Papa</Nombre>
+    <Fabricacion>2021</Fabricacion>
+    <Valor>1000000.0</Valor>
+    <Categoria>Casa</Categoria>
   </Activo>
 </Activos>

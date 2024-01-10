@@ -7,9 +7,15 @@ import Model.Model;
 import Model.Activo;
 import org.jdom2.JDOMException;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class Controller implements ActionListener {
 
@@ -21,9 +27,7 @@ public class Controller implements ActionListener {
         this.vista = new View(this);
         try {
             this.modelo = new Model();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (JDOMException e) {
+        } catch (IOException | JDOMException e) {
             throw new RuntimeException(e);
         }
         this.init_btns();
@@ -35,38 +39,111 @@ public class Controller implements ActionListener {
         vista.getBtn_limpiar().addActionListener(this);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        switch (e.getActionCommand()) {
-            case "Guardar": {
-                try {
-                    guardar_instrumento();
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                } catch (JDOMException ex) {
-                    throw new RuntimeException(ex);
-                }
-                break;
+    public boolean validar_excepciones(String serie){
+        try {
+            if (txt_field_vacio()) {
+                throw new Exception("Hay campos vacios, por favor revisar");
             }
-            case "Borrar": {
-                //eliminar_elemento(txF_Serie.getText());
-                break;
-            }
-            case "Limpiar": {
-                //limpiar_pnl_ingreso_txFields();
-                break;
-            }
-            default:
+        }catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage(), "Información", JOptionPane.INFORMATION_MESSAGE);
+            return false;
         }
+        return true;
+    }
+
+
+    public boolean txt_field_vacio(){
+        return vista.getTxf_activo().getText().isEmpty() |  String.valueOf(vista.getCmb_categoria().getSelectedItem()).isEmpty() | vista.getTxf_codigo().getText().isEmpty()
+                | vista.getTxf_valor().getText().isEmpty() | vista.getTxf_fabricacion().getText().isEmpty();
     }
 
     public void guardar_instrumento() throws IOException, JDOMException {
         //btn_borrar.setEnabled(false);
-       // if(validar_excepciones(Integer.parseInt(txF_Maximo.getText()), Integer.parseInt(txF_Minimo.getText()), txF_Serie.getText())) {
-            Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), vista.getTxf_categoria().getText(),
-                    Integer.valueOf(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
+        if(validar_excepciones(vista.getTxf_codigo().getText())) {
+            Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), String.valueOf(vista.getCmb_categoria().getSelectedItem()),
+                    Integer.parseInt(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
             modelo.save(activo);
-            //limpiar_pnl_ingreso_txFields();
-       // } else limpiar_pnl_ingreso_txFields();
+            vista.limpiar_pnl_ingreso_txFields();
+             } else vista.limpiar_pnl_ingreso_txFields();
+        }
+
+
+
+    public void recuperar_activo(){
+
+
+        if (!vista.getTxf_codigo().getText().isEmpty()) {
+            Activo obj = modelo.seleccionar_activo_codigo(vista.getTxf_codigo().getText());
+            if (obj != null) {
+                LocalDate current_date = LocalDate.now();
+                int current_Year = current_date.getYear();
+                int edad = current_Year - obj.getFabricacion();
+                vista.getTxf_codigo().setEnabled(false);
+                vista.getTxf_activo().setText(obj.getActivo());
+                vista.getTxf_fabricacion().setText(String.valueOf(obj.getFabricacion()));
+                vista.getCmb_categoria().setSelectedItem(obj.getCategoria());
+                vista.getTxf_valor().setText(String.valueOf(obj.getValor()));
+                vista.getTxf_edad().setText(String.valueOf(edad));
+                vista.getTxf_depreciacion().setText(String.valueOf(this.calcular_depreciacion(obj,edad)));
+                vista.getTxf_valor_actual().setText(String.valueOf(this.calcular_valor_actual(obj, edad)));
+
+            } else JOptionPane.showMessageDialog(null, "El objeto digito no existe");
+
+        } else JOptionPane.showMessageDialog(null, "Digita un codigo antes de consultar");
+
     }
+
+    public double calcular_valor_actual(Activo obj, int edad){
+        return obj.getValor() - this.calcular_depreciacion(obj, edad);
+    }
+
+    public double calcular_depreciacion(Activo obj, int edad){
+        double depreciacion = 0;
+        switch (String.valueOf(vista.getCmb_categoria().getSelectedItem())){
+            case "Casa":{
+                depreciacion = obj.getValor()*((double) edad /50);
+                break;
+            }
+            case "Computadora":{
+                depreciacion = obj.getValor()*((double) edad /5);
+                break;
+            }
+            case "Vehiculo":{
+                depreciacion = obj.getValor()*((double) edad /20);
+                break;
+            }
+            default:{break;}
+        }
+        return depreciacion;
+
+    }
+
+    //classes
+
+    public void actionPerformed(ActionEvent e) {
+            switch (e.getActionCommand()) {
+                case "Guardar": {
+                    try {
+                        guardar_instrumento();
+                    } catch (IOException | JDOMException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    break;
+                }
+                case "Consultar": {
+                    recuperar_activo();
+                    break;
+                }
+                case "Limpiar": {
+                    vista.limpiar_pnl_ingreso_txFields();
+                    break;
+                }
+                default:
+            }
+        }
+
+
+
+
+
 }

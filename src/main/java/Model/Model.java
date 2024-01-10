@@ -27,9 +27,15 @@ public class Model {
         this.init_xml_file();
     }
 
+    public boolean activo_existente(String serie){
+        Activo activo = seleccionar_activo_codigo(serie);
+        return activo != null;
+    }
+
     public void save(Activo obj) throws IOException, JDOMException {
-        current = seleccionar_instrumento_codigo(obj.getCodigo());
-        if (current == null) {
+        //current = seleccionar_activo_codigo(obj.getCodigo());
+        System.out.println("Ingreso save model");
+        if (!this.activo_existente(obj.getCodigo())) {
             lista.agregar(obj);
             System.out.printf(obj.toString());
             this.write_activo(obj, System.out);
@@ -51,7 +57,7 @@ public class Model {
         }
 
 
-        public Activo seleccionar_instrumento_codigo(String serie){
+        public Activo seleccionar_activo_codigo(String serie){
             return lista.obtener(serie);
         }
 
