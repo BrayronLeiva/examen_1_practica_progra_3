@@ -73,6 +73,9 @@ public class View extends JFrame {
 
     }
 
+    public void lanzar_mensaje(String msg){
+        JOptionPane.showMessageDialog(null, msg);
+    }
 
 
     //getter and setters
