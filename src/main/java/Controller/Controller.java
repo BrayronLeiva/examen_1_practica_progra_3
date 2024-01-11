@@ -22,6 +22,8 @@ public class Controller implements ActionListener {
 
     public Controller() throws IOException, JDOMException {
         this.vista = new View(this);
+        this.init_btns();
+        this.modo_actual = "Guardar";
         w_listenr = new Window_Listener();
         this.vista.addWindowListener(w_listenr);
         try {
@@ -31,8 +33,7 @@ public class Controller implements ActionListener {
         } catch (IOException | JDOMException e) {
             throw new RuntimeException(e);
         }
-        this.init_btns();
-        this.modo_actual = "Guardar";
+
     }
 
     public void init_btns(){
@@ -63,22 +64,25 @@ public class Controller implements ActionListener {
 
         vista.getTxf_codigo().setEnabled(true);
         if(validar_excepciones(vista.getTxf_codigo().getText())) {
-            Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), String.valueOf(vista.getCmb_categoria().getSelectedItem()),
-                    Integer.parseInt(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
+            Activo activo = this.generar_activo();
             if (this.get_modo_actual().equals("Guardar")) {
                 if(!modelo.save(activo)) {
-                    JOptionPane.showMessageDialog(null, "Este ID de activo ya existe");
+                    vista.lanzar_mensaje("Este ID de activo ya existe");
                 }
             } else if (this.get_modo_actual().equals("Consultar")) {
-                System.out.println("Ingresando a seccion de consultar");
                 if(!modelo.save(activo)) {
                     modelo.actualizar_activo(activo);
-                    System.out.println("Ingresando a actualizar activo");
                 }
             }
             this.limpiar_pantalla();
         }
 
+    }
+
+    public Activo generar_activo(){
+        Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), String.valueOf(vista.getCmb_categoria().getSelectedItem()),
+                Integer.parseInt(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
+        return activo;
     }
 
 
@@ -87,8 +91,7 @@ public class Controller implements ActionListener {
         if (!vista.getTxf_codigo().getText().isEmpty()) {
             Activo obj = modelo.seleccionar_activo_codigo(vista.getTxf_codigo().getText());
             if (obj != null) {
-                LocalDate current_date = LocalDate.now();
-                int current_Year = current_date.getYear();
+                int current_Year = this.obtener_fecha_actual();
                 int edad = current_Year - obj.getFabricacion();
                 vista.getTxf_codigo().setEnabled(false);
                 vista.getTxf_activo().setText(obj.getActivo());
@@ -99,10 +102,15 @@ public class Controller implements ActionListener {
                 vista.getTxf_depreciacion().setText(String.valueOf(this.calcular_depreciacion(obj,edad)));
                 vista.getTxf_valor_actual().setText(String.valueOf(this.calcular_valor_actual(obj, edad)));
 
-            } else JOptionPane.showMessageDialog(null, "El objeto digito no existe");
+            } else vista.lanzar_mensaje("El objeto digito no existe");
 
-        } else JOptionPane.showMessageDialog(null, "Digita un codigo antes de consultar");
+        } else vista.lanzar_mensaje("Digita un codigo antes de consultar");
 
+    }
+
+    public int obtener_fecha_actual(){
+        LocalDate current_date = LocalDate.now();
+        return current_date.getYear();
     }
 
     public double calcular_valor_actual(Activo obj, int edad){
