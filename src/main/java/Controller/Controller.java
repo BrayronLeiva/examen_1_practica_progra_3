@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class Controller implements ActionListener {
     View vista;
     Model modelo;
-
+    String modo_actual;
     Window_Listener w_listenr;
 
     public Controller() throws IOException, JDOMException {
@@ -32,6 +32,7 @@ public class Controller implements ActionListener {
             throw new RuntimeException(e);
         }
         this.init_btns();
+        this.modo_actual = "Guardar";
     }
 
     public void init_btns(){
@@ -59,19 +60,30 @@ public class Controller implements ActionListener {
     }
 
     public void guardar_instrumento() throws IOException, JDOMException {
+
         vista.getTxf_codigo().setEnabled(true);
         if(validar_excepciones(vista.getTxf_codigo().getText())) {
             Activo activo = new Activo(vista.getTxf_codigo().getText(), vista.getTxf_activo().getText(), String.valueOf(vista.getCmb_categoria().getSelectedItem()),
                     Integer.parseInt(vista.getTxf_fabricacion().getText()), Double.valueOf(vista.getTxf_valor().getText()));
-            modelo.save(activo);
-            vista.limpiar_pnl_ingreso_txFields();
+            if (this.get_modo_actual().equals("Guardar")) {
+                if(!modelo.save(activo)) {
+                    JOptionPane.showMessageDialog(null, "Este ID de activo ya existe");
+                }
+            } else if (this.get_modo_actual().equals("Consultar")) {
+                System.out.println("Ingresando a seccion de consultar");
+                if(!modelo.save(activo)) {
+                    modelo.actualizar_activo(activo);
+                    System.out.println("Ingresando a actualizar activo");
+                }
+            }
+            this.limpiar_pantalla();
         }
 
     }
 
+
     public void recuperar_activo(){
-
-
+        this.set_modo_actual("Consultar");
         if (!vista.getTxf_codigo().getText().isEmpty()) {
             Activo obj = modelo.seleccionar_activo_codigo(vista.getTxf_codigo().getText());
             if (obj != null) {
@@ -118,30 +130,42 @@ public class Controller implements ActionListener {
 
     }
 
+    public void limpiar_pantalla(){
+        this.set_modo_actual("Guardar");
+        vista.limpiar_pnl_ingreso_txFields();
+    }
 
     public void actionPerformed(ActionEvent e) {
             switch (e.getActionCommand()) {
                 case "Guardar": {
                     try {
-                        guardar_instrumento();
+                        this.guardar_instrumento();
                     } catch (IOException | JDOMException ex) {
                         throw new RuntimeException(ex);
                     }
                     break;
                 }
                 case "Consultar": {
-                    recuperar_activo();
+                    this.recuperar_activo();
                     break;
                 }
                 case "Limpiar": {
-                    vista.limpiar_pnl_ingreso_txFields();
+                    this.limpiar_pantalla();
                     break;
                 }
                 default:
             }
         }
 
+    public String get_modo_actual(){
+        return modo_actual;
+    }
 
+    public void set_modo_actual(String modo){
+        this.modo_actual = modo;
+    }
+
+    //classes
     public class Window_Listener implements WindowListener {
         @Override
         public void windowClosing(WindowEvent e) {

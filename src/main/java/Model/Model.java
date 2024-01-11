@@ -19,11 +19,11 @@ import java.util.List;
 
 public class Model {
     private Document doc;
-    private Document doc_reader;
     SAXBuilder sax;
+    File file;
     private Activo current;
     private List_Activos lista;
-    private static final String FILENAME = "c:\\Users\\Familia Leiva Salas\\IdeaProjects\\Examen_Practica\\src\\data.xml";
+    private static final String FILENAME = "src\\data.xml";
     public Model() throws IOException, JDOMException {
         this.lista = new List_Activos();
         this.init_xml_file();
@@ -36,23 +36,33 @@ public class Model {
         return activo != null;
     }
 
-    public void save(Activo obj) throws IOException, JDOMException {
+    public boolean save(Activo obj) throws IOException, JDOMException {
         current = seleccionar_activo_codigo(obj.getCodigo());
-        System.out.println("Ingreso save model");
+        //System.out.println("Ingreso save model");
         if (!this.activo_existente(obj.getCodigo())) {
             lista.agregar(obj);
             //System.out.printf(obj.toString());
         }
-        else actualizar_activo(obj);
-
+        else return false; //actualizar_activo(obj);
+        return true;
     }
+
+
 
     public void init_xml_file() throws IOException, JDOMException {
             this.sax = new SAXBuilder();
+            file = new File(FILENAME);
             try {
                 sax.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
                 sax.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-                doc = sax.build(new File(FILENAME));
+
+                if (file.exists() && file.length() != 0){
+                doc = sax.build(file);
+                }
+                else {
+                    doc = new Document(new Element("Activos"));
+                }
+
             } catch (JDOMException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -141,6 +151,8 @@ public class Model {
     public void cargar_datos() throws IOException, JDOMException {
         System.out.println("Ingreso al sector carga de datos");
         try {
+
+            //Element rootNode = doc.getRootElement();
 
             Element rootNode = doc.getRootElement();
             List<Element> lista_activos = rootNode.getChildren();

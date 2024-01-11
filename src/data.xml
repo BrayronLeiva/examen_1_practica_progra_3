@@ -1,38 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Activos>
   <Activo>
-    <Codigo>3333</Codigo>
-    <Nombre>Miau</Nombre>
-    <Fabricacion>2021</Fabricacion>
-    <Valor>1000.0</Valor>
-    <Categoria>Computadora</Categoria>
-  </Activo>
-  <Activo>
     <Codigo>1111</Codigo>
-    <Nombre>Peop</Nombre>
-    <Fabricacion>2021</Fabricacion>
-    <Valor>2000.0</Valor>
-    <Categoria>Computadora</Categoria>
-  </Activo>
-  <Activo>
-    <Codigo>2222</Codigo>
-    <Nombre>Miau</Nombre>
-    <Fabricacion>2021</Fabricacion>
-    <Valor>1000.0</Valor>
-    <Categoria>Computadora</Categoria>
-  </Activo>
-  <Activo>
-    <Codigo>4444</Codigo>
-    <Nombre>Pou</Nombre>
-    <Fabricacion>2021</Fabricacion>
-    <Valor>1000.0</Valor>
-    <Categoria>Computadora</Categoria>
-  </Activo>
-  <Activo>
-    <Codigo>7777</Codigo>
-    <Nombre>Pepl</Nombre>
+    <Nombre>Poiotttt</Nombre>
     <Fabricacion>2000</Fabricacion>
     <Valor>1000.0</Valor>
-    <Categoria>Casa</Categoria>
+    <Categoria>Poiotttt</Categoria>
   </Activo>
 </Activos>
